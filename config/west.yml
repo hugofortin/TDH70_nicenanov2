@@ -1,10 +1,10 @@
 manifest:
   remotes:
-    - name: Nis2
-      url-base: https://github.com/Nis2/
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
   projects:
     - name: zmk
-      remote: Nis2
+      remote: zmkfirmware
       revision: main
       import: app/west.yml
   self:

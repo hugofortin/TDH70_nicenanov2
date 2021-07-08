@@ -11,9 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - shield: kyria_left
+          - shield: tdh70_left
             board: nrfmicro_14_flipped
-          - shield: kyria_right
+          - shield: tdh70_right
             board: nrfmicro_14_flipped
 
 
@@ -64,7 +64,7 @@ jobs:
       - name: Generated DTS file
         if: always()
         run: cat -n build/zephyr/${{ matrix.board }}.dts.pre.tmp
-       - name: Rename zmk.uf2
+      - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

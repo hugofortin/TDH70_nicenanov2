@@ -1,0 +1,8 @@
+# Copyright (c) 2021 Denis Fortin
+# SPDX-License-Identifier: MIT
+
+config SHIELD_TDH70_LEFT
+	def_bool $(shields_list_contains,tdh70_left)
+
+config SHIELD_TDH70_RIGHT
+	def_bool $(shields_list_contains,tdh70_right)
