@@ -1,0 +1,11 @@
+manifest:
+  remotes:
+    - name: Nis2
+      url-base: https://github.com/Nis2/
+  projects:
+    - name: zmk
+      remote: Nis2
+      revision: main
+      import: app/west.yml
+  self:
+    path: config
