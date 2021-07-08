@@ -1,13 +1,22 @@
 on: [push, pull_request, workflow_dispatch]
 
-name: Build
+name: Build ZMK Firmware with nRFMicro 1.4 flipped
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:2.4
-    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shield: kyria_left
+            board: nrfmicro_14_flipped
+          - shield: kyria_right
+            board: nrfmicro_14_flipped
+
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -22,28 +31,59 @@ jobs:
             zephyr/
             bootloader/
             zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('manifest-dir/west.yml') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('config/west.yml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      - name: West Init
+        timeout-minutes: 2
+        continue-on-error: true
+
+      - name: Initialize workspace (west init)
         run: west init -l config
-      - name: West Update
+      - name: Update modules (west update)
         run: west update
-      - name: West Zephyr export
+      - name: Export Zephyr CMake package (west zephyr-export)
         run: west zephyr-export
-      - name: West Build (TDH70_left)
-        run: west build -s zmk/app -b nrfmicro_14_flipped -- -DSHIELD=kyria_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-      - name: TDH70_left DTS File
-        if: ${{ always() }}
-        run: cat -n build/zephyr/nrfmicro_14_flipped.dts.pre.tmp
-      - name: TDH70_left Kconfig file
-        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 kyria_left_nrfmicro_14_flipped.uf2
-      - name: Archive (TDH70_left)
+
+      - name: Prepare variables
+        id: variables
+        run: |
+          if [ -n "${{ matrix.shield }}" ]; then
+            SHIELD_ARG="-DSHIELD=${{ matrix.shield }}"
+            ARTIFACT_NAME="${{ matrix.shield }}-${{ matrix.board }}-zmk"
+          else
+            SHIELD_ARG=
+            ARTIFACT_NAME="${{ matrix.board }}-zmk"
+          fi
+          echo ::set-output name=shield-arg::${SHIELD_ARG}
+          echo ::set-output name=artifact-name::${ARTIFACT_NAME}
+      - name: Build release images (west build)
+        run: west build -s zmk/app -b ${{ matrix.board }} -- ${{ steps.variables.outputs.shield-arg }}
+          -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      - name: Generated DTS file
+        if: always()
+        run: cat -n build/zephyr/${{ matrix.board }}.dts.pre.tmp
+       - name: Rename zmk.uf2
+        run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
+      - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: firmware
-          path: kyria_left_nrfmicro_14_flipped.uf2
+          name: ${{ steps.variables.outputs.artifact-name }}-debug
+          path: ${{ matrix.shield }}_${{ matrix.board }}.uf2
+        continue-on-error: true
+
+      - name: Build debug images (west build)
+        run: west build -s zmk/app -b ${{ matrix.board }} -- ${{ steps.variables.outputs.shield-arg }}
+          -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      - name: Generated DTS file
+        if: always()
+        run: cat -n build/zephyr/${{ matrix.board }}.dts.pre.tmp
+      - name: Rename zmk.uf2
+        run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.variables.outputs.artifact-name }}-debug
+          path: ${{ matrix.shield }}_${{ matrix.board }}.uf2
+        continue-on-error: true
