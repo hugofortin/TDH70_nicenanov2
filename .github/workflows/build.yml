@@ -15,6 +15,8 @@ jobs:
             board: nrfmicro_14_flipped
           - shield: tdh70_right
             board: nrfmicro_14_flipped
+          - shield: settings_reset
+            board: nrfmicro_14_flipped
 
 
     steps:
