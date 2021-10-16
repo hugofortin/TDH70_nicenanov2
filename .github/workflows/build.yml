@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
           - shield: tdh70_left
-            board: nice!nano v2 flipped
+            board: nice_nano_v2_flipped
           - shield: tdh70_right
-            board: nice!nano v2 flipped
+            board: nice_nano_v2_flipped
           - shield: settings_reset
-            board: nice!nano v2 flipped
+            board: nice_nano_v2_flipped
 
 
     steps:
