@@ -1,6 +1,6 @@
 on: [push, pull_request, workflow_dispatch]
 
-name: Build ZMK Firmware with nRFMicro 1.4 flipped
+name: Build ZMK Firmware with nice!nano v2 flipped
 
 jobs:
   build:
@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
           - shield: tdh70_left
-            board: nrfmicro_14_flipped
+            board: nice!nano v2 flipped
           - shield: tdh70_right
-            board: nrfmicro_14_flipped
+            board: nice!nano v2 flipped
           - shield: settings_reset
-            board: nrfmicro_14_flipped
+            board: nice!nano v2 flipped
 
 
     steps:
